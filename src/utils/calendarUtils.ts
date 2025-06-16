@@ -1,4 +1,3 @@
-
 export interface ExamEvent {
   courseCode: string;
   courseName: string;
@@ -10,38 +9,101 @@ export interface ExamEvent {
   duration: string;
   location: string;
   session: string;
+  examNumber?: string;
+  lastOpenDate?: string;
+  lastAppealDate?: string;
+  registrationStatus?: string;
 }
+
+// Define the column mapping for flexible parsing
+const COLUMN_MAPPINGS = {
+  'מועד': 'session',
+  'קוד קורס': 'courseCode',
+  'שם קורס': 'courseName',
+  'שם המרצה': 'lecturer',
+  'מחלקה': 'department',
+  'סוג מקצוע': 'examType',
+  'תאריך': 'date',
+  'שעת התחלה': 'startTime',
+  'משך': 'duration',
+  'חדר הבחינה': 'location',
+  'מספר נבחן': 'examNumber',
+  'תאריך אחרון לפתיחת מחברות': 'lastOpenDate',
+  'תאריך אחרון להגשת ערעור': 'lastAppealDate',
+  'סטטוס רישום': 'registrationStatus'
+};
+
+// Required columns for calendar event creation
+const REQUIRED_COLUMNS = ['קוד קורס', 'שם קורס', 'תאריך', 'שעת התחלה', 'משך'];
 
 export const parseExamTable = (text: string): ExamEvent[] => {
   const lines = text.trim().split('\n');
   const events: ExamEvent[] = [];
   
-  // Skip header line
+  if (lines.length < 2) {
+    throw new Error('הטבלה חייבת לכלול לפחות שורת כותרת ושורת נתונים אחת');
+  }
+
+  // Parse header to identify column positions
+  const headerLine = lines[0].trim();
+  const headers = headerLine.split(/\t+|\s{2,}/);
+  
+  // Create column mapping
+  const columnIndexMap: { [key: string]: number } = {};
+  headers.forEach((header, index) => {
+    const trimmedHeader = header.trim();
+    if (COLUMN_MAPPINGS[trimmedHeader]) {
+      columnIndexMap[COLUMN_MAPPINGS[trimmedHeader]] = index;
+    }
+  });
+
+  // Check if required columns are present
+  const missingColumns = REQUIRED_COLUMNS.filter(col => 
+    !Object.keys(columnIndexMap).includes(COLUMN_MAPPINGS[col])
+  );
+  
+  if (missingColumns.length > 0) {
+    throw new Error(`עמודות חובה חסרות: ${missingColumns.join(', ')}`);
+  }
+  
+  // Parse data rows
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
     
-    // Split by tab or multiple spaces
     const columns = line.split(/\t+|\s{2,}/);
     
-    if (columns.length >= 10) {
-      const event: ExamEvent = {
-        session: columns[0]?.trim() || '',
-        courseCode: columns[1]?.trim() || '',
-        courseName: columns[2]?.trim() || '',
-        lecturer: columns[3]?.trim() || '',
-        department: columns[4]?.trim() || '',
-        examType: columns[5]?.trim() || '',
-        date: columns[6]?.trim() || '',
-        startTime: columns[7]?.trim() || '',
-        duration: columns[8]?.trim() || '',
-        location: columns[9]?.trim() || 'טרם נקבע'
-      };
-      
-      // Validate required fields
-      if (event.courseName && event.date && event.startTime) {
-        events.push(event);
-      }
+    // Create event object with available data
+    const event: ExamEvent = {
+      session: columns[columnIndexMap.session]?.trim() || '',
+      courseCode: columns[columnIndexMap.courseCode]?.trim() || '',
+      courseName: columns[columnIndexMap.courseName]?.trim() || '',
+      lecturer: columns[columnIndexMap.lecturer]?.trim() || '',
+      department: columns[columnIndexMap.department]?.trim() || '',
+      examType: columns[columnIndexMap.examType]?.trim() || '',
+      date: columns[columnIndexMap.date]?.trim() || '',
+      startTime: columns[columnIndexMap.startTime]?.trim() || '',
+      duration: columns[columnIndexMap.duration]?.trim() || '',
+      location: columns[columnIndexMap.location]?.trim() || 'טרם נקבע'
+    };
+
+    // Add optional fields if they exist
+    if (columnIndexMap.examNumber !== undefined) {
+      event.examNumber = columns[columnIndexMap.examNumber]?.trim() || '';
+    }
+    if (columnIndexMap.lastOpenDate !== undefined) {
+      event.lastOpenDate = columns[columnIndexMap.lastOpenDate]?.trim() || '';
+    }
+    if (columnIndexMap.lastAppealDate !== undefined) {
+      event.lastAppealDate = columns[columnIndexMap.lastAppealDate]?.trim() || '';
+    }
+    if (columnIndexMap.registrationStatus !== undefined) {
+      event.registrationStatus = columns[columnIndexMap.registrationStatus]?.trim() || '';
+    }
+    
+    // Validate required fields
+    if (event.courseName && event.date && event.startTime && event.courseCode && event.duration) {
+      events.push(event);
     }
   }
   
@@ -63,14 +125,30 @@ export const generateICSFile = (events: ExamEvent[]): string => {
     const endDateTime = calculateEndTime(startDateTime, event.duration);
     
     const title = `${event.examType}: ${event.courseName}`;
-    const description = [
+    const descriptionLines = [
       `קוד קורס: ${event.courseCode}`,
       `מרצה: ${event.lecturer}`,
       `מחלקה: ${event.department}`,
       `סוג: ${event.examType}`,
       `מועד: ${event.session}`,
       `משך: ${event.duration}`
-    ].filter(line => line.split(': ')[1].trim()).join('\\n');
+    ];
+
+    // Add optional fields to description if they exist
+    if (event.examNumber) {
+      descriptionLines.push(`מספר נבחן: ${event.examNumber}`);
+    }
+    if (event.registrationStatus) {
+      descriptionLines.push(`סטטוס רישום: ${event.registrationStatus}`);
+    }
+    if (event.lastOpenDate) {
+      descriptionLines.push(`תאריך אחרון לפתיחת מחברות: ${event.lastOpenDate}`);
+    }
+    if (event.lastAppealDate) {
+      descriptionLines.push(`תאריך אחרון להגשת ערעור: ${event.lastAppealDate}`);
+    }
+
+    const description = descriptionLines.filter(line => line.split(': ')[1].trim()).join('\\n');
     
     const location = event.location !== 'טרם נקבע' ? event.location : '';
     

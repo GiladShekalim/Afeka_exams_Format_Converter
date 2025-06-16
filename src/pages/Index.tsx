@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Download, Calendar, FileText } from 'lucide-react';
+import { Download, Calendar, FileText, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseExamTable, generateICSFile } from '@/utils/calendarUtils';
 
@@ -48,7 +47,7 @@ const Index = () => {
       toast.success(`נוצרו ${events.length} אירועי בחינות ביומן`);
     } catch (error) {
       console.error('Error processing calendar data:', error);
-      toast.error('שגיאה בעיבוד הנתונים. אנא בדוק את הפורמט');
+      toast.error(`שגיאה בעיבוד הנתונים: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }
@@ -70,6 +69,47 @@ const Index = () => {
         </div>
 
         <div className="grid gap-6">
+          {/* Column Requirements Card */}
+          <Card className="shadow-lg bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-right text-amber-800">
+                <Info className="h-5 w-5" />
+                דרישות עמודות
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 text-right">
+                <div>
+                  <h4 className="font-semibold text-amber-800 mb-2">עמודות חובה (חייבות להיות כלולות):</h4>
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {['קוד קורס', 'שם קורס', 'שם המרצה', 'מחלקה', 'סוג מקצוע', 'תאריך', 'שעת התחלה', 'משך'].map((col) => (
+                      <span key={col} className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {col}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-amber-700 mb-2">עמודות אופציונליות (ניתן לכלול או להשמיט):</h4>
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {['מועד', 'חדר הבחינה', 'מספר נבחן', 'תאריך אחרון לפתיחת מחברות', 'תאריך אחרון להגשת ערעור', 'סטטוס רישום'].map((col) => (
+                      <span key={col} className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm border border-amber-200">
+                        {col}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-amber-100 p-3 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    <strong>הערה:</strong> הטבלה יכולה לכלול עמודות נוספות או חלק מהעמודות הרשומות כאן, אך העמודות החובה חייבות להיות כלולות ליצירת אירועי יומן תקינים.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-right">
@@ -77,7 +117,7 @@ const Index = () => {
                 הכנס את נתוני הבחינות
               </CardTitle>
               <CardDescription className="text-right">
-                העתק והדבק את טבלת הבחינות (כולל כותרות) בפורמט הבא
+                העתק והדבק את טבלת הבחינות (כולל כותרות). הטבלה יכולה להכיל עמודות נוספות או חלק מהעמודות הרשומות למעלה.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -116,6 +156,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
+          {/* ... keep existing code (how it works card) */}
           <Card className="shadow-lg bg-gradient-to-r from-green-50 to-emerald-50">
             <CardHeader>
               <CardTitle className="text-green-800 text-right">איך זה עובד?</CardTitle>
