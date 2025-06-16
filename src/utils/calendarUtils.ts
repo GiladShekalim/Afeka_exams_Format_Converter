@@ -112,11 +112,12 @@ export const parseExamTable = (text: string): ExamEvent[] => {
 };
 
 export const parseExcelData = (data: any[][]): ExamEvent[] => {
-  if (data.length < 2) {
-    throw new Error('הקובץ חייב לכלול לפחות שורת כותרת ושורת נתונים אחת');
+  if (data.length < 3) {
+    throw new Error('הקובץ חייב לכלול לפחות שורה ראשונה, שורת כותרת ושורת נתונים אחת');
   }
 
-  const headers = data[0];
+  // Use the second row (index 1) as headers instead of the first row
+  const headers = data[1];
   const events: ExamEvent[] = [];
 
   // Create column mapping
@@ -137,8 +138,8 @@ export const parseExcelData = (data: any[][]): ExamEvent[] => {
     throw new Error(`עמודות חובה חסרות: ${missingColumns.join(', ')}`);
   }
 
-  // Parse data rows
-  for (let i = 1; i < data.length; i++) {
+  // Parse data rows starting from the third row (index 2)
+  for (let i = 2; i < data.length; i++) {
     const row = data[i];
     if (!row || row.length === 0) continue;
 

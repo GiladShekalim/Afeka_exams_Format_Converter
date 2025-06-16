@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -194,7 +193,7 @@ const Index = () => {
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
                 <p className="text-sm text-green-800 text-right">
-                  <strong>טיפ:</strong> ודא שהקובץ מכיל את העמודות החובה ושהשורה הראשונה מכילה את כותרות העמודות.
+                  <strong>טיפ:</strong> ודא שהקובץ מכיל את העמודות החובה ושהשורה השנייה מכילה את כותרות העמודות.
                 </p>
               </div>
             </CardContent>
