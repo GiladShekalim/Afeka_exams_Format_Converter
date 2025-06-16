@@ -1,3 +1,4 @@
+
 export interface ExamEvent {
   courseCode: string;
   courseName: string;
@@ -33,7 +34,7 @@ const COLUMN_MAPPINGS = {
   'סטטוס רישום': 'registrationStatus'
 };
 
-// Required columns for calendar event creation
+// Updated required columns for calendar event creation
 const REQUIRED_COLUMNS = ['קוד קורס', 'שם קורס', 'תאריך', 'שעת התחלה', 'משך'];
 
 export const parseExamTable = (text: string): ExamEvent[] => {
@@ -101,12 +102,80 @@ export const parseExamTable = (text: string): ExamEvent[] => {
       event.registrationStatus = columns[columnIndexMap.registrationStatus]?.trim() || '';
     }
     
-    // Validate required fields
+    // Validate required fields only
     if (event.courseName && event.date && event.startTime && event.courseCode && event.duration) {
       events.push(event);
     }
   }
   
+  return events;
+};
+
+export const parseExcelData = (data: any[][]): ExamEvent[] => {
+  if (data.length < 2) {
+    throw new Error('הקובץ חייב לכלול לפחות שורת כותרת ושורת נתונים אחת');
+  }
+
+  const headers = data[0];
+  const events: ExamEvent[] = [];
+
+  // Create column mapping
+  const columnIndexMap: { [key: string]: number } = {};
+  headers.forEach((header: string, index: number) => {
+    const trimmedHeader = header?.toString().trim();
+    if (COLUMN_MAPPINGS[trimmedHeader]) {
+      columnIndexMap[COLUMN_MAPPINGS[trimmedHeader]] = index;
+    }
+  });
+
+  // Check if required columns are present
+  const missingColumns = REQUIRED_COLUMNS.filter(col => 
+    !Object.keys(columnIndexMap).includes(COLUMN_MAPPINGS[col])
+  );
+  
+  if (missingColumns.length > 0) {
+    throw new Error(`עמודות חובה חסרות: ${missingColumns.join(', ')}`);
+  }
+
+  // Parse data rows
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+
+    // Create event object with available data
+    const event: ExamEvent = {
+      session: row[columnIndexMap.session]?.toString().trim() || '',
+      courseCode: row[columnIndexMap.courseCode]?.toString().trim() || '',
+      courseName: row[columnIndexMap.courseName]?.toString().trim() || '',
+      lecturer: row[columnIndexMap.lecturer]?.toString().trim() || '',
+      department: row[columnIndexMap.department]?.toString().trim() || '',
+      examType: row[columnIndexMap.examType]?.toString().trim() || '',
+      date: row[columnIndexMap.date]?.toString().trim() || '',
+      startTime: row[columnIndexMap.startTime]?.toString().trim() || '',
+      duration: row[columnIndexMap.duration]?.toString().trim() || '',
+      location: row[columnIndexMap.location]?.toString().trim() || 'טרם נקבע'
+    };
+
+    // Add optional fields if they exist
+    if (columnIndexMap.examNumber !== undefined) {
+      event.examNumber = row[columnIndexMap.examNumber]?.toString().trim() || '';
+    }
+    if (columnIndexMap.lastOpenDate !== undefined) {
+      event.lastOpenDate = row[columnIndexMap.lastOpenDate]?.toString().trim() || '';
+    }
+    if (columnIndexMap.lastAppealDate !== undefined) {
+      event.lastAppealDate = row[columnIndexMap.lastAppealDate]?.toString().trim() || '';
+    }
+    if (columnIndexMap.registrationStatus !== undefined) {
+      event.registrationStatus = row[columnIndexMap.registrationStatus]?.toString().trim() || '';
+    }
+
+    // Validate required fields only
+    if (event.courseName && event.date && event.startTime && event.courseCode && event.duration) {
+      events.push(event);
+    }
+  }
+
   return events;
 };
 
