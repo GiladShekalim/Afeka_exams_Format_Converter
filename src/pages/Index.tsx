@@ -1,11 +1,10 @@
 
 import React from 'react';
 import PageHeader from '@/components/PageHeader';
-import ColumnRequirementsCard from '@/components/ColumnRequirementsCard';
 import ExcelUploadCard from '@/components/ExcelUploadCard';
 import TextInputCard from '@/components/TextInputCard';
-import ResultsPreviewCard from '@/components/ResultsPreviewCard';
 import HelpSection from '@/components/HelpSection';
+import ResultsPreviewCard from '@/components/ResultsPreviewCard';
 import CreatorSignature from '@/components/CreatorSignature';
 import { useExamConverter } from '@/hooks/useExamConverter';
 
@@ -22,7 +21,6 @@ const Index = () => {
         <PageHeader />
 
         <div className="grid gap-6">
-          <ColumnRequirementsCard />
           <ExcelUploadCard onFileUpload={handleFileUpload} isProcessing={isProcessing} />
           <TextInputCard 
             inputText={inputText}
