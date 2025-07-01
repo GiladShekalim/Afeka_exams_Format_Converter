@@ -31,10 +31,10 @@ const Index = () => {
             isProcessing={isProcessing}
             sampleData={sampleData}
           />
-          <ResultsPreviewCard />
         </div>
 
         <HelpSection />
+        <ResultsPreviewCard />
         <CreatorSignature />
       </div>
     </div>
