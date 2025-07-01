@@ -20,7 +20,7 @@ const ResultsPreviewCard = () => {
           <h4 className="font-semibold text-purple-800 mb-3 text-center">דוגמה לאירוע ביומן:</h4>
           <div className="flex justify-center">
             <img 
-              src="/lovable-uploads/4a022032-e95b-4b72-a584-d1a83c2e89d6.png" 
+              src="/lovable-uploads/4a84bcd8-f45e-45c0-87cd-1a14101025d5.png" 
               alt="דוגמה לאירוע בחינה ביומן גוגל"
               className="max-w-full h-auto rounded-lg shadow-md border"
             />
