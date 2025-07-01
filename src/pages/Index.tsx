@@ -1,6 +1,8 @@
 
+
 import React from 'react';
 import PageHeader from '@/components/PageHeader';
+import ColumnRequirementsCard from '@/components/ColumnRequirementsCard';
 import ExcelUploadCard from '@/components/ExcelUploadCard';
 import TextInputCard from '@/components/TextInputCard';
 import HelpSection from '@/components/HelpSection';
@@ -21,6 +23,7 @@ const Index = () => {
         <PageHeader />
 
         <div className="grid gap-6">
+          <ColumnRequirementsCard />
           <ExcelUploadCard onFileUpload={handleFileUpload} isProcessing={isProcessing} />
           <TextInputCard 
             inputText={inputText}
@@ -40,3 +43,4 @@ const Index = () => {
 };
 
 export default Index;
+
